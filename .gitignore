@@ -1,0 +1,7 @@
+node_modules/
+.netlify/
+package-lock.json
+# Real style guides never belong in Git or the published folder
+*.private.json
+style-guide.json
+private/

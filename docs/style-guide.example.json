@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "template": "FICTIONAL TEMPLATE. Reply to a Threads post in a friendly voice.\n\nSTYLE FOR THIS REPLY: {{styleInstruction}}\n\nTHE POST TO REPLY TO:\n\"{{post}}\"\n\nReturn 3 replies, one per line.",
+  "styleGuides": {
+    "auto": "Fictional: pick the best style.",
+    "community": "Fictional: be kind, no products.",
+    "soft-pitch": "Fictional: gently mention the shop.",
+    "care-tip": "Fictional: answer the care question."
+  }
+}

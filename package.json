@@ -1,0 +1,10 @@
+{
+  "name": "succulents-box-drafter",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0"
+  }
+}

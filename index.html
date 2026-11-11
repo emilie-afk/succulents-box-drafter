@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Succulents Box Reply Drafter</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #fbfdf9;
+    color: #1f2a1f;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .container { max-width: 560px; margin: 0 auto; }
+  .header { margin-bottom: 18px; }
+  .header h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+    color: #2d5a2d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header p { font-size: 13px; color: #5a6b5a; margin: 0; }
+
+  .card {
+    background: #f7faf6;
+    border: 1px solid #d8e5d4;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  label { font-size: 13px; font-weight: 600; color: #3a4a3a; display: block; margin-bottom: 6px; }
+  textarea, input[type=text], input[type=password] {
+    width: 100%;
+    border: 1px solid #c8d5c4;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    resize: vertical;
+  }
+  textarea { min-height: 90px; }
+  textarea:focus, input:focus { outline: 2px solid #6fa86f; outline-offset: -1px; border-color: #6fa86f; }
+
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .chip {
+    border: 1px solid #c8d5c4;
+    background: #fff;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    color: #3a4a3a;
+    transition: all 0.15s;
+  }
+  .chip:hover { background: #eef5ec; }
+  .chip.active { background: #2d5a2d; color: #fff; border-color: #2d5a2d; }
+
+  button.primary {
+    background: #2d5a2d;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: background 0.15s;
+    width: 100%;
+  }
+  button.primary:hover:not(:disabled) { background: #244a24; }
+  button.primary:disabled { background: #9bb59b; cursor: not-allowed; }
+
+  .results { margin-top: 8px; }
+  .reply-card {
+    background: #fff;
+    border: 1px solid #d8e5d4;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .reply-text { flex: 1; font-size: 15px; color: #1f2a1f; }
+  .reply-meta { font-size: 11px; color: #7a8a7a; margin-top: 4px; }
+  .copy-btn {
+    background: #eef5ec;
+    color: #2d5a2d;
+    border: 1px solid #c8d5c4;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { background: #dfeadc; }
+  .copy-btn.copied { background: #2d5a2d; color: #fff; border-color: #2d5a2d; }
+
+
+  .loading {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #d8e5d4;
+    border-top-color: #2d5a2d;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error {
+    background: #fdecea;
+    border: 1px solid #f5b5b0;
+    color: #8c2e25;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .hint { font-size: 12px; color: #7a8a7a; margin-top: 6px; }
+
+  .password-screen {
+    position: fixed;
+    inset: 0;
+    background: #fbfdf9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+  .password-card {
+    max-width: 360px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #d8e5d4;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .password-card h2 { margin: 0 0 8px; color: #2d5a2d; font-size: 18px; }
+  .password-card p { margin: 0 0 16px; color: #5a6b5a; font-size: 13px; }
+  .logout-link {
+    font-size: 11px;
+    color: #7a8a7a;
+    cursor: pointer;
+    text-align: right;
+    margin-top: 8px;
+  }
+  .logout-link:hover { color: #2d5a2d; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- Password gate -->
+<div class="password-screen" id="password-screen" style="display:none;">
+  <div class="password-card">
+    <h2>🪴 Sign in</h2>
+    <p>Enter the password to use the reply drafter.</p>
+    <input type="password" id="password-input" placeholder="Password" autofocus>
+    <button class="primary" id="password-submit" style="margin-top:12px;">Continue</button>
+    <div id="password-error" style="color:#8c2e25; font-size:12px; margin-top:8px; display:none;">Wrong password. Try again.</div>
+  </div>
+</div>
+
+<div class="container" id="main-app" style="display:none;">
+  <div class="header">
+    <h1>🪴 Succulents Box Reply Drafter</h1>
+    <p>Paste a Threads post. Get 3 reply options in your brand voice.</p>
+  </div>
+
+  <div class="card">
+    <label for="post-input">The Threads post you want to reply to</label>
+    <textarea id="post-input" placeholder="e.g. why is my pothos turning yellow? i water it every week 😩"></textarea>
+    <div class="hint">Just the post text. Username and context optional.</div>
+
+    <label style="margin-top: 14px;">Reply style</label>
+    <div class="row" id="style-chips">
+      <div class="chip active" data-style="auto">auto-detect</div>
+      <div class="chip" data-style="community">community (no pitch)</div>
+      <div class="chip" data-style="soft-pitch">soft pitch</div>
+      <div class="chip" data-style="care-tip">care tip</div>
+    </div>
+
+    <button class="primary" id="generate-btn">Generate 3 replies</button>
+  </div>
+
+  <div class="results" id="results"></div>
+
+
+  <div class="logout-link" id="logout">Sign out</div>
+  <div id="logout-error" role="alert" style="display:none; color:#8c2e25; font-size:12px; text-align:right; margin-top:4px;"></div>
+</div>
+
+<script>
+  // --- Password gate ---
+  // The password is sent once to /api/session, which sets an expiring,
+  // HttpOnly session cookie. Nothing secret is stored in the browser.
+  const LEGACY_PASSWORD_KEY = 'sbx_drafter_pw';
+  try { localStorage.removeItem(LEGACY_PASSWORD_KEY); } catch (e) {}   // clean up older versions
+  const passwordScreen = document.getElementById('password-screen');
+  const mainApp = document.getElementById('main-app');
+  const passwordInput = document.getElementById('password-input');
+  const passwordSubmit = document.getElementById('password-submit');
+  const passwordError = document.getElementById('password-error');
+  const logoutLink = document.getElementById('logout');
+  const PASSWORD_ERROR_TEXT = passwordError.textContent;
+
+  function showApp() {
+    passwordScreen.style.display = 'none';
+    mainApp.style.display = 'block';
+  }
+  function showLogin() {
+    mainApp.style.display = 'none';
+    passwordScreen.style.display = 'flex';
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+
+  // On load, ask the server whether this browser already has a valid session.
+  async function checkSession() {
+    try {
+      const r = await fetch('/api/session', { method: 'GET', credentials: 'same-origin' });
+      if (r.ok) { showApp(); return; }
+    } catch (e) { /* fall through to login */ }
+    showLogin();
+  }
+
+  passwordSubmit.addEventListener('click', async () => {
+    const pw = passwordInput.value;
+    if (!pw.trim()) return;
+    passwordSubmit.disabled = true;
+    passwordSubmit.textContent = 'Checking…';
+    try {
+      const r = await fetch('/api/session', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+      });
+      passwordInput.value = '';
+      if (r.status === 401) {
+        passwordError.textContent = PASSWORD_ERROR_TEXT;
+        passwordError.style.display = 'block';
+        passwordInput.focus();
+        return;
+      }
+      if (!r.ok) {
+        passwordError.textContent = 'Sign-in is unavailable right now. Try again later.';
+        passwordError.style.display = 'block';
+        return;
+      }
+      passwordError.style.display = 'none';
+      showApp();
+    } catch (err) {
+      passwordError.textContent = 'Network error. Try again.';
+      passwordError.style.display = 'block';
+    } finally {
+      passwordSubmit.disabled = false;
+      passwordSubmit.textContent = 'Continue';
+    }
+  });
+  passwordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') passwordSubmit.click();
+  });
+  // Sign out only once the server confirms the session cookie was cleared;
+  // otherwise say so and let the user try again.
+  const logoutError = document.getElementById('logout-error');
+  let signingOut = false;
+  logoutLink.addEventListener('click', async () => {
+    if (signingOut) return;
+    signingOut = true;
+    logoutError.style.display = 'none';
+    let ok = false;
+    try {
+      const r = await fetch('/api/session', { method: 'DELETE', credentials: 'same-origin' });
+      ok = r.ok;
+    } catch (e) { ok = false; }
+    signingOut = false;
+    if (ok) {
+      showLogin();
+    } else {
+      logoutError.textContent = 'Sign-out failed. Check your connection and try again.';
+      logoutError.style.display = 'block';
+    }
+  });
+
+  // --- Style chips ---
+  const chips = document.querySelectorAll('#style-chips .chip');
+  let selectedStyle = "auto";
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      selectedStyle = chip.dataset.style;
+    });
+  });
+
+  // --- Generate ---
+  const btn = document.getElementById('generate-btn');
+  const postInput = document.getElementById('post-input');
+  const resultsDiv = document.getElementById('results');
+
+  btn.addEventListener('click', async () => {
+    const post = postInput.value.trim();
+    if (!post) {
+      resultsDiv.innerHTML = '<div class="error">Paste a Threads post first.</div>';
+      return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading"></span>Drafting…';
+    resultsDiv.innerHTML = '';
+
+    try {
+      const r = await fetch('/api/generate', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post, style: selectedStyle })
+      });
+      if (r.status === 401) {
+        showLogin();
+        return;
+      }
+      const data = await r.json();
+      if (!r.ok) {
+        resultsDiv.innerHTML = '<div class="error">' + escapeHtml(String(data.error || 'Something went wrong')) + '</div>';
+        return;
+      }
+      const replies = (data.replies || []).filter(x => x);
+      if (replies.length === 0) {
+        resultsDiv.innerHTML = '<div class="error">Got an empty response. Try again.</div>';
+      } else {
+        renderReplies(replies.slice(0, 3));
+      }
+    } catch (err) {
+      resultsDiv.innerHTML = '<div class="error">Network error: ' + escapeHtml(String(err.message || err)) + '</div>';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Generate 3 replies';
+    }
+  });
+
+  function renderReplies(replies) {
+    resultsDiv.innerHTML = '';
+    replies.forEach((reply) => {
+      const cleaned = reply.replace(/^[-*•\d.)\s"']+/, '').replace(/["']+$/, '').trim();
+      const wordCount = cleaned.split(/\s+/).length;
+      const card = document.createElement('div');
+      card.className = 'reply-card';
+      card.innerHTML = `
+        <div class="reply-text">
+          ${escapeHtml(cleaned)}
+          <div class="reply-meta">${wordCount} words</div>
+        </div>
+        <button class="copy-btn" data-text="${escapeHtml(cleaned)}">Copy</button>
+      `;
+      resultsDiv.appendChild(card);
+    });
+    resultsDiv.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.text;
+        navigator.clipboard.writeText(text).then(() => {
+          const original = btn.textContent;
+          btn.textContent = 'Copied ✓';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1500);
+        });
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  postInput.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') btn.click();
+  });
+
+  // Boot
+  checkSession();
+</script>
+</body>
+</html>
