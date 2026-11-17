@@ -1,3 +1,5 @@
+**Designed and built by Emilie Ngo for Succulents Box.**
+
 
 ## Private style guide (not in Git)
 
