@@ -1,6 +1,3 @@
-**Designed and built by Emilie Ngo for Succulents Box.**
-
-
 ## Private style guide (not in Git)
 
 The writing guide (voice, rules, examples, prompt template) is confidential and
@@ -27,3 +24,5 @@ Preview check (no paid model call): `PREVIEW_PASSWORD=<password> node scripts/pr
 — confirms unauthenticated requests are refused, sign-in works, the function can read the private
 guide (400 for a deliberately incomplete request; 503 means missing or unreadable), and the
 published page contains no guide text (prints counts only).
+
+Designed and built by Emilie Ngo for Succulents Box.
